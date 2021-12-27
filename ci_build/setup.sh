@@ -1,7 +1,7 @@
 # exit when any command fails
 set -e
 
-yum update
+yum -y update
 yum -y install python3-pip
-yum install rustc
+yum -y install rustc
 pip3 install virtualenv
