@@ -2,9 +2,7 @@ import argparse
 import json
 import logging
 import os
-import shutil
 import sys
-import uuid
 
 from dataset_builder import DatasetBuilder
 from train_builder import TrainBuilder

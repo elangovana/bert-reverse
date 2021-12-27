@@ -3,9 +3,6 @@ import os
 import tempfile
 from unittest import TestCase
 
-import numpy as np
-
-
 from main_train_pipeline import TrainPipeline
 
 
@@ -48,7 +45,7 @@ class TestSitTrain(TestCase):
     def _run_train(self, train_data_file, additional_args, tempdir_model=None, tempdir_checkpoint=None):
         tempdir_model = tempdir_model or tempfile.mkdtemp()
         tempdir_checkpoint = tempdir_checkpoint or tempfile.mkdtemp()
-        tempdir_out = tempfile.mkdtemp()
+        # tempdir_out = tempfile.mkdtemp()
 
         # Runs
         return TrainPipeline().run_train(train_data_file,
