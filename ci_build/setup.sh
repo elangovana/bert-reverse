@@ -1,4 +1,4 @@
-apt-get update
-apt-get -y install python3-pip
-apt-get install rustc
+apt update
+apt -y install python3-pip
+apt install rustc
 pip3 install virtualenv
