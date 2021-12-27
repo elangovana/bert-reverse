@@ -21,14 +21,14 @@ def run(stack_prefix):
     app = core.App()
 
     ReposStack(app, "reposstack", stack_name=get_stack_name(stack_prefix, StackType.Repos))
-    CIPipelineStack(app, "cipipelinestack", stack_name=get_stack_name(stack_prefix, StackType.CIPipeline))
+    CIPipelineStack(app, "cistack", stack_name=get_stack_name(stack_prefix, StackType.CIPipeline))
 
     app.synth()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--stack", help="Pass an optional stack prefix", required=False, default="rfvsearch")
+    parser.add_argument("--stack", help="Pass an optional stack prefix", required=False, default="bertreverse")
 
     args = parser.parse_args()
     run(args.stack)
