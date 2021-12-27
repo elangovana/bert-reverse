@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 temp/
 /infra/src/node_modules/
+temp_node
+cdk.out
