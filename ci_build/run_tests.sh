@@ -13,6 +13,7 @@
  #Install requirements
  pip install -r tests/requirements.txt
  pip install pyflakes==2.3.0
+ pip install setuptools-rust==1.1.1
 
  #Run tests
  export PYTHONPATH=./src
