@@ -1,9 +1,8 @@
 # SageMaker PyTorch image
 ARG device=gpu
 ARG account_url=763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training
-ARG cuda=cu111
-FROM ${account_url}:1.8.1-${device}-py36${cuda}-ubuntu18.04-v1.12
-
+ARG cuda=cu113
+FROM ${account_url}:1.10.0-${device}-py38${cuda}-ubuntu20.04-sagemaker
 ENV PATH="/opt/ml/code:${PATH}"
 
 # this environment variable is used by the SageMaker PyTorch container to determine our user code directory.

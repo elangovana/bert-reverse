@@ -46,7 +46,7 @@ function build_docker(){
 VERSION=$(date '+%Y%m%d%H%M')
 
 device=gpu
-cuda="-cu111"
+cuda="-cu113"
 LATEST_TAG=$device-latest
 VERSION_TAG=$device-$VERSION
 build_docker $device $VERSION_TAG $cuda $LATEST_TAG
