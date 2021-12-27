@@ -3,7 +3,7 @@ set -e
 
 yum -y update
 yum -y install python3-pip
-yum install llvm7.0
+yum -y install llvm7.0
 ./configure --enable-rust
 make
 pip3 install virtualenv
