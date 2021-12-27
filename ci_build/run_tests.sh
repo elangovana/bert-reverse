@@ -14,11 +14,11 @@
  pip install pyflakes==2.3.0
  # Work around for tokensior as wheel doesnt seem to work
  git clone https://github.com/huggingface/tokenizers.git
- git checkout tags/python-v0.10.3
  cd tokenizers/bindings/python
+ git checkout tags/python-v0.10.3
  pip install setuptools_rust
  python setup.py install
-  cd ../../..
+ cd ../../..
  # End of workaround
 
  pip install -r tests/requirements.txt
