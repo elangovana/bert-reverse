@@ -34,7 +34,8 @@ phases:
       - echo Running tests
       - export TESTREPORTDIR=$HOME/TESTREPORTS
       - mkdir -p $TESTREPORTDIR
-      - bash ci_build/run_tests.sh testenv $TESTREPORTDIR/report.xml
+      - echo "WARNING: TESTS ARE NOT RUN"
+      # - bash ci_build/run_tests.sh testenv $TESTREPORTDIR/report.xml
       - bash ci_build/cdk_validate_cfn.sh $cdkartifactprefix$(date +%Y%m%d%H%M%s)
 
       # Build docker
