@@ -34,7 +34,7 @@ class CIPipelineStack(core.Stack):
 
         cfn_build_image_parameter = CfnParameter(self, "BuildImage", type="String",
                                                  description="The codebuild image as specified in https://docs.aws.amazon.com/codebuild/latest/userguide/codebuild-env-ref-available.html. e.g. aws/codebuild/amazonlinux2-x86_64-standard:2.0",
-                                                 default="aws/codebuild/standard:4.0")
+                                                 default="aws/codebuild/standard:5.0")
         build_image = cfn_build_image_parameter.value_as_string
 
         # CFN parameters - docker repo
