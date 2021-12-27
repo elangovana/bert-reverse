@@ -18,7 +18,9 @@
  cd tokenizers/bindings/python
  pip install setuptools_rust
  python setup.py install
+  cd ../../..
  # End of workaround
+
  pip install -r tests/requirements.txt
 
  #Run tests
