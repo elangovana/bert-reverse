@@ -1,2 +1,2 @@
 -r ../src/requirements.txt
-pytest==6.2.3
+-r requirements_test.txt

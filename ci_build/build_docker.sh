@@ -17,8 +17,9 @@ echo Building the Docker image $IMAGE_REPO from base ${PYTORCH_DOCKER_ACCOUNT_UR
 function build_docker(){
   DEVICE=$1
   TAG=$2
-  CUDA=$3
-  LATEST_TAG=$4
+  RUN_TEST=$3
+  CUDA=$4
+  LATEST_TAG=$5
 
   echo build docker with args "$@"
 
@@ -27,6 +28,10 @@ function build_docker(){
   $(aws ecr get-login --no-include-email --region $ECR_REGION --registry-ids ${PYTORCH_DOCKER_ACCOUNT} )
 
   docker build -t $IMAGE_REPO:$TAG   -f docker/Dockerfile $DOCKER_BASE_DIR --build-arg device=$DEVICE --build-arg account_url=${PYTORCH_REPO} --build-arg cuda=${CUDA}
+  if [  "$RUN_TEST" == "Y" ]; then
+    echo "Running tests..."
+    docker run  -it --mount type=bind,source="$(pwd)"/tests,target=/temp_source_tests,readonly  --name $IMAGE_REPO:$TAG --entrypoint  bash -c "pip install -r /temp_source_tests/requirements_test.txt; pytest /temp_source_tests/*"
+  fi
 
   echo Logging in to Amazon ECR...
   $(aws ecr get-login --no-include-email --region $ECR_REGION --registry-ids ${IMAGE_REPO_ACCOUNT})
@@ -45,13 +50,14 @@ function build_docker(){
 ## TODO: Automate version tagging based on datetime for now, ideally should be tied to release tags
 VERSION=$(date '+%Y%m%d%H%M')
 
+device=cpu
+LATEST_TAG=$device-latest
+VERSION_TAG=$device-$VERSION
+build_docker $device $VERSION_TAG Y
+
 device=gpu
 cuda="-cu113"
 LATEST_TAG=$device-latest
 VERSION_TAG=$device-$VERSION
-build_docker $device $VERSION_TAG $cuda $LATEST_TAG
+build_docker $device $VERSION_TAG  N $cuda $LATEST_TAG
 
-device=cpu
-LATEST_TAG=$device-latest
-VERSION_TAG=$device-$VERSION
-build_docker $device $VERSION_TAG
