@@ -17,7 +17,7 @@ class ReverseLangMnliDataset(Dataset):
         if os.path.isdir(file_or_dir):
             files = os.listdir(file_or_dir)
             assert len(files) == 1, f"Expecting just one file in {file_or_dir}"
-            input_file = files[0]
+            input_file = os.path.join(file_or_dir, files[0])
         self._data_x = self._read_file(input_file)
 
     def _read_file(self, input_file):
