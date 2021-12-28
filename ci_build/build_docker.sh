@@ -30,9 +30,8 @@ function build_docker(){
   docker build -t $IMAGE_REPO:$TAG   -f docker/Dockerfile $DOCKER_BASE_DIR --build-arg device=$DEVICE --build-arg account_url=${PYTORCH_REPO} --build-arg cuda=${CUDA}
   if [  "$RUN_TEST" == "Y" ]; then
     echo "Running tests..."
-    ls -l $(pwd)/tests
-    #docker run  --mount type=bind,source="$(pwd)"/tests,target=/temp_source_tests,readonly   --entrypoint  "bash -c pip install -r /temp_source_tests/requirements_test.txt; pytest /temp_source_tests/*"  $IMAGE_REPO:$TAG
-    docker run  -v "$(pwd)"/tests:/opt/temp_source_tests  --entrypoint  "/bin/sh -c echo hi; echo gello; ls -l /opt/temp_source_tests"  $IMAGE_REPO:$TAG
+    docker run -v $(pwd)/tests:/temp_source_tests --entrypoint bash $IMAGE_REPO:$TAG  -c "set -e; pip install -r /temp_source_tests/requirements_test.txt; export PYTHONPATH=/opt/ml/code; pytest /temp_source_tests/*"
+
   fi
 
   echo Logging in to Amazon ECR...
