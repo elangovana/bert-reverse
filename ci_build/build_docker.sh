@@ -32,7 +32,7 @@ function build_docker(){
     echo "Running tests..."
     ls -l $(pwd)/tests
     #docker run  --mount type=bind,source="$(pwd)"/tests,target=/temp_source_tests,readonly   --entrypoint  "bash -c pip install -r /temp_source_tests/requirements_test.txt; pytest /temp_source_tests/*"  $IMAGE_REPO:$TAG
-    docker run  --mount type=bind,source="$(pwd)"/tests,target=/temp_source_tests,readonly   --entrypoint  "/bin/sh -c echo hi; echo gello; ls -l /"  $IMAGE_REPO:$TAG
+    docker run  -v "temp_source_tests:$(pwd)"/tests  --entrypoint  "/bin/sh -c echo hi; echo gello; ls -l /temp_source_tests"  $IMAGE_REPO:$TAG
   fi
 
   echo Logging in to Amazon ECR...
