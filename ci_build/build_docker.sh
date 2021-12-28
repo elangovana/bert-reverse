@@ -31,7 +31,7 @@ function build_docker(){
   if [  "$RUN_TEST" == "Y" ]; then
     echo "Running tests..."
     #docker run  --mount type=bind,source="$(pwd)"/tests,target=/temp_source_tests,readonly   --entrypoint  "bash -c pip install -r /temp_source_tests/requirements_test.txt; pytest /temp_source_tests/*"  $IMAGE_REPO:$TAG
-    docker run  --mount type=bind,source="$(pwd)"/tests,target=/temp_source_tests,readonly   --entrypoint  "bash -c echo hi; echo gello; ls /temp_source_tests"  $IMAGE_REPO:$TAG
+    docker run  --mount type=bind,source="$(pwd)"/tests,target=/temp_source_tests,readonly   --entrypoint  "/bin/bash -c echo hi; echo gello; ls /temp_source_tests"  $IMAGE_REPO:$TAG
   fi
 
   echo Logging in to Amazon ECR...
