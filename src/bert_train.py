@@ -195,9 +195,10 @@ class BertTrain:
         val_loss = 0
 
         with torch.no_grad():
-            actuals = torch.tensor([], dtype=torch.long).to(device=self._default_device)
-            predicted = torch.tensor([], dtype=torch.long).to(device=self._default_device)
-            conf_scores = torch.tensor([], dtype=torch.float).to(device=self._default_device)
+            # Use CPU , as this is low compute and avoids cuda out of memory error
+            actuals = torch.tensor([], dtype=torch.long).to(device="cpu")
+            predicted = torch.tensor([], dtype=torch.long).to(device="cpu")
+            conf_scores = torch.tensor([], dtype=torch.float).to(device="cpu")
 
             soft_max_func = nn.Softmax(dim=-1)
             for idx, val in enumerate(val_iter):
@@ -207,17 +208,17 @@ class BertTrain:
                 pred_batch_y = model_network(val_batch_idx)[0]
 
                 # compute loss
-                val_loss += loss_function(pred_batch_y.permute(0,2,1), val_y).item()
+                val_loss += loss_function(pred_batch_y.permute(0, 2, 1), val_y).item()
 
-                actuals = torch.cat([actuals, val_y])
+                actuals = torch.cat([actuals, val_y.cpu()])
                 pred_flat = torch.max(pred_batch_y, dim=-1)[1]
-                predicted = torch.cat([predicted, pred_flat])
-                conf_scores = torch.cat([conf_scores, soft_max_func(pred_batch_y)])
+                predicted = torch.cat([predicted, pred_flat.cpu()])
+                conf_scores = torch.cat([conf_scores, soft_max_func(pred_batch_y).cpu()])
 
         # Average loss
         val_loss = val_loss / len(actuals)
 
-        return actuals.cpu().numpy(), predicted.cpu().numpy(), val_loss, conf_scores.cpu().numpy()
+        return actuals.numpy(), predicted.numpy(), val_loss, conf_scores.numpy()
 
     def create_checkpoint(self, model, checkpoint_dir):
         if self.checkpoint_manager:
