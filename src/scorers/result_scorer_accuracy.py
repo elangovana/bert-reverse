@@ -1,7 +1,7 @@
-from scorers.base_classification_scorer import BaseClassificationScorer
+import numpy as np
 from sklearn.metrics import accuracy_score
 
-import numpy as np
+from scorers.base_classification_scorer import BaseClassificationScorer
 
 
 class ResultScorerAccuracy(BaseClassificationScorer):
@@ -15,8 +15,6 @@ class ResultScorerAccuracy(BaseClassificationScorer):
     def __call__(self, y_actual, y_pred, pos_label):
         y_pred = np.array(y_pred)
         y_actual = np.array(y_actual)
-        print(y_pred)
-        print(y_actual)
 
         # if 2 D array, get max label index
         if len(y_actual.shape) == 2:
