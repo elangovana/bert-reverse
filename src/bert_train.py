@@ -118,16 +118,16 @@ class BertTrain:
 
             # Print training set results
             self._logger.info("Train set result details:")
-            train_actuals, train_predicted, train_loss, train_conf = self._validate(loss_function, model_network,
-                                                                                    train_iter)
+            train_actuals, train_predicted, train_loss = self._validate(loss_function, model_network,
+                                                                        train_iter)
             train_scores = self._compute_scores(pos_label, train_actuals, train_predicted)
 
             self._logger.info("Train set result details: {}".format(train_scores))
 
             # Print validation set results
             self._logger.info("Validation set result details:")
-            val_actuals, val_predicted, val_loss, val_conf = self._validate(loss_function, model_network,
-                                                                            validation_iter)
+            val_actuals, val_predicted, val_loss = self._validate(loss_function, model_network,
+                                                                  validation_iter)
             val_scores = self._compute_scores(pos_label, val_actuals, val_predicted)
             self._logger.info("Validation set result details: {} ".format(val_scores))
 
@@ -142,8 +142,7 @@ class BertTrain:
                 best_results = {"scores": val_scores,
                                 "loss": val_loss,
                                 "actual": val_actuals.tolist(),
-                                "pred": val_predicted.tolist(),
-                                "conf": val_conf.tolist()
+                                "pred": val_predicted.tolist()
                                 }
 
                 self._logger.info(
@@ -198,9 +197,7 @@ class BertTrain:
             # Use CPU , as this is low compute and avoids cuda out of memory error
             actuals = torch.tensor([], dtype=torch.long).to(device="cpu")
             predicted = torch.tensor([], dtype=torch.long).to(device="cpu")
-            conf_scores = torch.tensor([], dtype=torch.float).to(device="cpu")
 
-            soft_max_func = nn.Softmax(dim=-1)
             for idx, val in enumerate(val_iter):
                 val_batch_idx = val[0].to(device=self._default_device)
                 val_y = val[1].to(device=self._default_device)
@@ -213,12 +210,11 @@ class BertTrain:
                 actuals = torch.cat([actuals, val_y.cpu()])
                 pred_flat = torch.max(pred_batch_y, dim=-1)[1]
                 predicted = torch.cat([predicted, pred_flat.cpu()])
-                conf_scores = torch.cat([conf_scores, soft_max_func(pred_batch_y).cpu()])
 
         # Average loss
         val_loss = val_loss / len(actuals)
 
-        return actuals.numpy(), predicted.numpy(), val_loss, conf_scores.numpy()
+        return actuals.numpy(), predicted.numpy(), val_loss
 
     def create_checkpoint(self, model, checkpoint_dir):
         if self.checkpoint_manager:
