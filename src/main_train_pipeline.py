@@ -20,6 +20,8 @@ class TrainPipeline:
             json.dump(additional_args, f)
 
     def run_train(self, train_dir, val_dir, model_dir, checkpoint_dir, additional_args):
+        self._persist_config(additional_args, model_dir)
+
         # Builder
         dataset_builder = DatasetBuilder(val_data=val_dir, dataset_factory_name=additional_args["datasetfactory"],
                                          tokenisor_factory_name=additional_args["modelfactory"], train_data=train_dir,
