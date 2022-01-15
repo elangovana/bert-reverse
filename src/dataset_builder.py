@@ -59,7 +59,8 @@ class DatasetBuilder:
 
     def get_label_mapper(self):
         if self._label_mapper is None:
-            self._label_mapper = self._dataset_factory.get_label_mapper(postprocessors=self.get_tokenisor())
+            self._label_mapper = self._dataset_factory.get_label_mapper(postprocessors=self.get_tokenisor(),
+                                                                        **self._addition_args_dict)
 
         return self._label_mapper
 

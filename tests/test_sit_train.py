@@ -29,14 +29,15 @@ class TestSitTrain(TestCase):
         dataset_factory = "datasets.reverse_lang_mnli_dataset_factory.ReverseLangMnliDatasetFactory"
         model_factory = "models.bert_model_factory.BertModelFactory"
 
-        tokenisor_data_dir = os.path.join(os.path.dirname(__file__), "data", "tokensior_data")
         bert_config_file = self._write_bert_config_file(bert_config, temp_model_dir)
+        vocab_file = os.path.join(os.path.dirname(__file__), "data", "tokensior_data", "vocab.txt")
+        tokenisor_data_dir = os.path.dirname(vocab_file)
 
         additional_args = {"model_config": bert_config_file,
                            "tokenisor_data_dir": tokenisor_data_dir,
                            "datasetfactory": dataset_factory,
                            "modelfactory": model_factory,
-                           "vocab_size": vocab_size,
+                           "vocab_file": vocab_file,
                            "batch": batch,
                            "numworkers": 1,
                            "epochs": 2,
@@ -65,14 +66,15 @@ class TestSitTrain(TestCase):
         # Additional args
         dataset_factory = "datasets.reverse_lang_mnli_dataset_factory.ReverseLangMnliDatasetFactory"
         model_factory = "models.bert_model_factory.BertModelFactory"
-        tokenisor_data_dir = os.path.join(os.path.dirname(__file__), "data", "tokensior_data")
-        bert_config_file = self._write_bert_config_file(bert_config, tokenisor_data_dir)
+        vocab_file = os.path.join(os.path.dirname(__file__), "data", "tokensior_data", "vocab.txt")
+        tokenisor_data_dir = os.path.dirname(vocab_file)
+        bert_config_file = self._write_bert_config_file(bert_config, temp_model_dir)
 
         train_additional_args = {"model_config": bert_config_file,
                                  "tokenisor_data_dir": tokenisor_data_dir,
                                  "datasetfactory": dataset_factory,
                                  "modelfactory": model_factory,
-                                 "vocab_size": vocab_size,
+                                 "vocab_file": vocab_file,
                                  "batch": batch,
                                  "numworkers": 1,
                                  "epochs": 2,

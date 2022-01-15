@@ -1,4 +1,7 @@
-class BaseMapperBase:
+from typing import Dict
+
+
+class BaseLabelMapper:
     """
     Base class for mapping labels to zero indexed integers
     """
@@ -40,5 +43,19 @@ class BaseMapperBase:
         """
         The raw positive label index
         :return: The integer index corresponding to the raw positive_label
+        """
+        raise NotImplementedError
+
+    @property
+    def id2label(self) -> Dict[int, str]:
+        """
+      Returns a dict mapping all the indices to labels
+        """
+        raise NotImplementedError
+
+    @property
+    def label2id(self) -> Dict[str, int]:
+        """
+      Returns a dict mapping all the labels to indices
         """
         raise NotImplementedError

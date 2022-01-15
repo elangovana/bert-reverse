@@ -1,7 +1,6 @@
 import json
 import os
 
-import torch
 from torch.utils.data import Dataset
 
 
@@ -10,8 +9,7 @@ class ReverseLangMnliDataset(Dataset):
     Reverse sentence prediction using MNLI dataset
     """
 
-    def __init__(self, file_or_dir, input_transformer=None, label_transformer=None):
-        self.label_transformer = label_transformer
+    def __init__(self, file_or_dir, input_transformer=None):
         self.input_transformer = input_transformer
         input_file = file_or_dir
         if os.path.isdir(file_or_dir):
@@ -40,7 +38,5 @@ class ReverseLangMnliDataset(Dataset):
             x = self.input_transformer(x)
 
         y = x
-        if self.label_transformer:
-            y = torch.tensor([self.label_transformer.map(yi) for yi in y][::-1])
 
         return x, y
