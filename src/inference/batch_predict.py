@@ -25,7 +25,7 @@ class BatchPredict:
             data_files = glob.glob("{}/*.jsonl".format(datajson))
 
         for d in data_files:
-            output_file = "{}.json".format(os.path.join(output_dir, Path(d).name)) if output_dir else None
+            output_file = "{}.jsonl".format(os.path.join(output_dir, Path(d).name)) if output_dir else None
             self._logger.info("Running inference on file {} with output in {}".format(d, output_file))
             try:
                 prediction = self.predict_from_file(d, base_artefacts_dir, is_ensemble, output_file, numworkers, batch,
@@ -129,11 +129,7 @@ class BatchPredict:
             conf_i = conf_i_tensor.cpu().tolist()
 
             label_mapped_prediction = [label_mapper.reverse_map(pi) for pi in pred_i]
-            predicted_raw_text = ""
-            for t in label_mapped_prediction:
-                if not t.startswith("##"):
-                    predicted_raw_text = predicted_raw_text + " "
-                predicted_raw_text = predicted_raw_text + t
+            predicted_raw_text = self._get_predicted_raw_text(label_mapped_prediction)
 
             predicted_confidence = conf_i
 
@@ -161,7 +157,32 @@ class BatchPredict:
             self._logger.info(f"Writing to file {output_file}")
             # Write json to file
             with open(output_file, "w") as f:
-                json.dump(result, f)
+                for item in result:
+                    json.dump(item, f)
+                    f.write("\n")
+
+    def _get_predicted_raw_text(self, label_mapped_prediction):
+        predicted_raw_text = ""
+        first_pad_position = None
+        for ti, t in enumerate(label_mapped_prediction):
+
+            if t.startswith("##"):
+                t = t[2:]
+            elif ti != 0:
+                predicted_raw_text = predicted_raw_text + " "
+
+            predicted_raw_text = predicted_raw_text + t
+
+            # Reset pad position, and get continous one
+            if t != "[PAD]":
+                first_pad_position = None
+            elif first_pad_position is None:
+                first_pad_position = ti
+
+        predicted_raw_text = predicted_raw_text[0:first_pad_position]
+        if predicted_raw_text[0:5] == '[CLS]':
+            predicted_raw_text = predicted_raw_text[5:]
+        return predicted_raw_text
 
     def _extract_file(self, targzfile, dest=None):
 
