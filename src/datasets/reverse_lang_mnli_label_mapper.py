@@ -41,6 +41,7 @@ class ReverseLangMnliDatasetMapper(BaseLabelMapper):
         with open(vocab_file) as f:
             lines = f.readlines()
         for i, l in enumerate(lines):
-            id2label[i] = l
-            label2id[l] = i
+            v = l.strip("\n")
+            id2label[i] = v
+            label2id[v] = i
         return id2label, label2id
