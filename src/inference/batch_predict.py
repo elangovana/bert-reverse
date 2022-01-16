@@ -183,8 +183,6 @@ class BatchPredict:
             predicted_raw_text = predicted_raw_text[last_pad_position:]
 
         if predicted_raw_text.endswith('[CLS]'):
-            print(predicted_raw_text)
-
             predicted_raw_text = predicted_raw_text[:-5]
         return predicted_raw_text
 
