@@ -107,7 +107,6 @@ class BatchPredict:
 
         predictions_tensor = predictions_data_tuple[0]
         confidence_scores = predictions_data_tuple[1]
-        print(predictions_data_tuple[0].shape)
         # If no filter pass everything through
         default_filter = lambda p, c: True
         filter_func = filter_func or default_filter
@@ -137,7 +136,7 @@ class BatchPredict:
 
             r = {
                 "prediction": label_mapped_prediction,
-                "confidence": predicted_confidence,
+             #   "confidence": predicted_confidence,
                 "predicted_raw_text": predicted_raw_text
             }
 
