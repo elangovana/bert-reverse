@@ -163,7 +163,7 @@ class BatchPredict:
 
     def _get_predicted_raw_text(self, label_mapped_prediction):
         predicted_raw_text = ""
-        first_pad_position = None
+        last_pad_position = None
         for ti, t in enumerate(label_mapped_prediction):
 
             if t.startswith("##"):
@@ -173,15 +173,20 @@ class BatchPredict:
 
             predicted_raw_text = predicted_raw_text + t
 
-            # Reset pad position, and get continous one
-            if t != "[PAD]":
-                first_pad_position = None
-            elif first_pad_position is None:
-                first_pad_position = ti
+            # Reset pad position, and get continuous one, after the first token #SEP
+            if t != "[PAD]" and last_pad_position is None and ti > 0:
+                last_pad_position = len(predicted_raw_text) - 1
 
-        predicted_raw_text = predicted_raw_text[0:first_pad_position]
-        if predicted_raw_text[0:5] == '[CLS]':
-            predicted_raw_text = predicted_raw_text[5:]
+        if predicted_raw_text[0:5] == '[SEP]':
+            predicted_raw_text = predicted_raw_text[6:]
+            last_pad_position = last_pad_position - 6
+        if last_pad_position is not None:
+            predicted_raw_text = predicted_raw_text[last_pad_position:]
+
+        if predicted_raw_text.endswith('[CLS]'):
+            print(predicted_raw_text)
+
+            predicted_raw_text = predicted_raw_text[:-5]
         return predicted_raw_text
 
     def _extract_file(self, targzfile, dest=None):
