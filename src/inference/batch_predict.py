@@ -2,6 +2,7 @@ import glob
 import json
 import logging
 import os
+import tarfile
 import traceback
 from pathlib import Path
 from typing import Dict
@@ -49,6 +50,14 @@ class BatchPredict:
         else:
             artifacts_directories = [base_artifacts_dir]
 
+        # Extract gz
+        for artifacts_dir in artifacts_directories:
+            # Persist params
+            dir_contents = os.listdir(artifacts_dir)
+
+            if len(dir_contents) == 1 and dir_contents[0].endswith("tar.gz"):
+                self._extract_file(os.path.join(artifacts_dir, dir_contents[0]))
+
         # Load params
         output_config = os.path.join(artifacts_directories[0], "training_config_parameters.json")
         with open(output_config, "r") as f:
@@ -67,7 +76,6 @@ class BatchPredict:
         # Load ensemble
         models = []
         for artifact_dir in artifacts_directories:
-            # Persist params
             output_config = os.path.join(artifacts_directories[0], "training_config_parameters.json")
             with open(output_config, "r") as f:
                 train_args = json.load(f)
@@ -154,3 +162,10 @@ class BatchPredict:
             # Write json to file
             with open(output_file, "w") as f:
                 json.dump(result, f)
+
+    def _extract_file(self, targzfile, dest=None):
+
+        dest = dest or os.path.dirname(targzfile)
+        with tarfile.open(targzfile) as f:
+            # extracting file
+            f.extractall(dest)
