@@ -15,9 +15,10 @@ class TestSitTrain(TestCase):
         # Arrange
         train_data_file = os.path.join(os.path.dirname(__file__), "data", "sample_mnli.jsonl")
         batch = 3
+        vocab_file = os.path.join(os.path.dirname(__file__), "data", "tokensior_data", "vocab.txt")
 
         # Bert Config
-        vocab_size = 100
+        vocab_size = self._get_vocab_size(vocab_file)
         sequence_len = 20
         num_classes = vocab_size
         temp_model_dir = tempfile.mkdtemp()
@@ -30,7 +31,6 @@ class TestSitTrain(TestCase):
         model_factory = "models.bert_model_factory.BertModelFactory"
 
         bert_config_file = self._write_bert_config_file(bert_config, temp_model_dir)
-        vocab_file = os.path.join(os.path.dirname(__file__), "data", "tokensior_data", "vocab.txt")
         tokenisor_data_dir = os.path.dirname(vocab_file)
 
         additional_args = {"model_config": bert_config_file,
@@ -52,9 +52,10 @@ class TestSitTrain(TestCase):
         # Arrange
         train_data_file = os.path.join(os.path.dirname(__file__), "data", "sample_mnli.jsonl")
         batch = 3
+        vocab_file = os.path.join(os.path.dirname(__file__), "data", "tokensior_data", "vocab.txt")
 
         # Bert Config
-        vocab_size = 100
+        vocab_size = self._get_vocab_size(vocab_file)
         sequence_len = 20
         num_classes = vocab_size
         temp_model_dir = tempfile.mkdtemp()
@@ -66,7 +67,6 @@ class TestSitTrain(TestCase):
         # Additional args
         dataset_factory = "datasets.reverse_lang_mnli_dataset_factory.ReverseLangMnliDatasetFactory"
         model_factory = "models.bert_model_factory.BertModelFactory"
-        vocab_file = os.path.join(os.path.dirname(__file__), "data", "tokensior_data", "vocab.txt")
         tokenisor_data_dir = os.path.dirname(vocab_file)
         bert_config_file = self._write_bert_config_file(bert_config, temp_model_dir)
 
@@ -123,3 +123,7 @@ class TestSitTrain(TestCase):
             json.dump(bert_config, f)
 
         return bert_config_file
+
+    def _get_vocab_size(self, vocab_file):
+        with open(vocab_file) as f:
+            return len(f.readlines())
