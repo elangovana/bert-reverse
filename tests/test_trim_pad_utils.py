@@ -95,6 +95,25 @@ class TestTrimPadUtils(TestCase):
         self.assertTrue(torch.equal(expected_y, actual_y),
                         f"Expected \n{expected_y} \ndoesnt match actual \n{actual_y}")
 
+    def test_trim_lpad_pad_multiple(self):
+        data_x = torch.tensor([[0, 0, 0, 1, 2],
+                               [0, 0, 4, 1, 2]
+                               ])
+        data_y = torch.tensor([[1, 2, 3, 4, 5],
+                               [0, 0, 6, 7, 8]
+                               ])
+        expected_x = torch.tensor([0, 0, 0, 1, 2, 4, 1, 2])
+        expected_y = torch.tensor([1, 2, 3, 4, 5, 6, 7, 8])
+
+        # Act
+        actual_x, actual_y = trim_lpad(data_x, data_y)
+
+        # Assert
+        self.assertTrue(torch.equal(expected_x, actual_x),
+                        f"Expected \n{expected_x} doesnt match actual \n{actual_x}")
+        self.assertTrue(torch.equal(expected_y, actual_y),
+                        f"Expected \n{expected_y} \ndoesnt match actual \n{actual_y}")
+
     def test_trim_pad_conf_with_pad(self):
         data_x = torch.tensor([[0, 0, 0, 1, 2]])
         data_y = torch.tensor([[0, 0, 3, 4, 5]])
