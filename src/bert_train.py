@@ -185,6 +185,8 @@ class BertTrain:
         return scores
 
     def _validate(self, loss_function, model_network, val_iter):
+        self._logger.info("Starting validation")
+
         # switch model to evaluation mode
         model_network.eval()
 
@@ -213,6 +215,7 @@ class BertTrain:
 
         # Average loss
         val_loss = val_loss / len(actuals)
+        self._logger.info("Completed validation")
 
         return actuals.numpy(), predicted.numpy(), val_loss
 
