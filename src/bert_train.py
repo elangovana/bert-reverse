@@ -224,6 +224,7 @@ class BertTrain:
         return actuals.numpy(), predicted.numpy(), val_loss
 
     def trim_pad(self, batch_of_seq_x, batch_of_seq_y):
+        self._logger.info("Starting triming")
         result_x = []
         result_y = []
         for s_x, s_y in zip(batch_of_seq_x, batch_of_seq_y):
@@ -236,6 +237,8 @@ class BertTrain:
                 i += 1
             result_x.append(s_x[i:])
             result_y.append(s_y[i:])
+
+        self._logger.info("Completed triming")
 
         return torch.cat(result_x, dim=0), torch.cat(result_y, dim=0)
 
