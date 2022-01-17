@@ -225,22 +225,27 @@ class BertTrain:
 
     def trim_pad(self, batch_of_seq_x, batch_of_seq_y):
         self._logger.info("Starting triming")
+
         result_x = []
         result_y = []
         for s_x, s_y in zip(batch_of_seq_x, batch_of_seq_y):
             i = 1
-            init_xi = s_x[i]
-            init_yi = s_y[i]
+            xi = s_x[i]
+            yi = s_y[i]
 
             # 0 is the pad index
-            while init_xi.item() == init_yi.item() and init_yi.item() == 0:
+            while xi.item() == yi.item() and yi.item() == 0 and i < len(s_y):
                 i += 1
+                xi = s_x[i]
+                yi = s_y[i]
+
             result_x.append(s_x[i:])
             result_y.append(s_y[i:])
 
-        self._logger.info("Completed triming")
+        result_x, result_y = torch.cat(result_x, dim=0), torch.cat(result_y, dim=0)
 
-        return torch.cat(result_x, dim=0), torch.cat(result_y, dim=0)
+        self._logger.info("Completed triming")
+        return result_x, result_y
 
     def create_checkpoint(self, model, checkpoint_dir):
         if self.checkpoint_manager:
