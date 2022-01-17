@@ -1,6 +1,7 @@
 import json
 import os
 
+import torch
 from torch.utils.data import Dataset
 
 
@@ -36,7 +37,9 @@ class ReverseLangMnliDataset(Dataset):
 
         if self.input_transformer:
             x = self.input_transformer(x)
+            y = torch.flip(x, [0])
 
-        y = x[::-1]
+        else:
+            y = x[::-1]
 
         return x, y
