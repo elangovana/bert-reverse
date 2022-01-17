@@ -224,7 +224,7 @@ class BertTrain:
         return actuals.numpy(), predicted.numpy(), val_loss
 
     def trim_pad(self, batch_of_seq_x, batch_of_seq_y):
-        self._logger.info("Starting triming")
+        self._logger.debug("Starting triming")
 
         result_x = []
         result_y = []
@@ -244,7 +244,7 @@ class BertTrain:
 
         result_x, result_y = torch.cat(result_x, dim=0), torch.cat(result_y, dim=0)
 
-        self._logger.info("Completed triming")
+        self._logger.debug("Completed triming")
         return result_x, result_y
 
     def create_checkpoint(self, model, checkpoint_dir):
