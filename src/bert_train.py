@@ -102,11 +102,8 @@ class BertTrain:
                 self._logger.debug("Running loss")
 
                 # Only compute loss for non-pad
-                trimmed_actual, trimmed_pred = self.trim_pad_conf(batch_y.cpu(), predicted.cpu())
-
-                loss = loss_function(trimmed_pred.to(device=self._default_device),
-                                     trimmed_actual.to(device=self._default_device)
-                                     ) / self.accumulation_steps
+                trimmed_actual, trimmed_pred = self.trim_pad_conf(batch_y, predicted)
+                loss = loss_function(trimmed_pred, trimmed_actual) / self.accumulation_steps
                 loss.backward()
 
                 losses_train.append(loss.item())
