@@ -103,6 +103,7 @@ def parse_args():
     for i in range(0, len(additional), 2):
         additional_dict[additional[i].lstrip("--")] = additional[i + 1]
     additional_dict["pretrained_model"] = args.pretrained_model_dir
+    additional_dict["vocab_file"] = os.path.join(args.pretrained_model_dir, "vocab.txt")
 
     return args, additional_dict
 
