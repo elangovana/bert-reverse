@@ -40,7 +40,7 @@ class TestSitTrain(TestCase):
                            "vocab_file": vocab_file,
                            "batch": batch,
                            "numworkers": 1,
-                           "epochs": 2,
+                           "epochs": 25,
                            "tokenisor_max_seq_len": sequence_len,
                            "earlystoppingpatience": 1
                            }

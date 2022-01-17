@@ -40,8 +40,6 @@ class BertTrain:
     def _logger(self):
         return logging.getLogger(__name__)
 
-
-
     def run_train(self, train_iter, validation_iter, model_network, loss_function, optimizer, pos_label):
         """
     Runs train...
@@ -103,7 +101,7 @@ class BertTrain:
                 # Step 4. Compute loss
                 self._logger.debug("Running loss")
                 # Reshape predicted so that it is (batch,  labels, sequence)
-                loss = loss_function(predicted.permute(0,2,1), batch_y) / self.accumulation_steps
+                loss = loss_function(predicted.permute(0, 2, 1), batch_y) / self.accumulation_steps
                 loss.backward()
 
                 losses_train.append(loss.item())
@@ -200,21 +198,39 @@ class BertTrain:
 
             for idx, val in enumerate(val_iter):
                 val_batch_idx = val[0].to(device=self._default_device)
-                val_y = val[1].to(device=self._default_device)
+                val_batch_y = val[1].to(device=self._default_device)
 
                 pred_batch_y = model_network(val_batch_idx)[0]
 
                 # compute loss
-                val_loss += loss_function(pred_batch_y.permute(0, 2, 1), val_y).item()
+                val_loss += loss_function(pred_batch_y.permute(0, 2, 1), val_batch_y).item()
 
-                actuals = torch.cat([actuals, val_y.cpu()])
-                pred_flat = torch.max(pred_batch_y, dim=-1)[1]
-                predicted = torch.cat([predicted, pred_flat.cpu()])
+                pred_batch_labels = torch.max(pred_batch_y, dim=-1)[1]
+
+                trim_val_batch_y, trim_pred_batch_labels = self.trim_pad(val_batch_y.cpu(), pred_batch_labels.cpu())
+                actuals = torch.cat([actuals, trim_val_batch_y.cpu()])
+                predicted = torch.cat([predicted, trim_pred_batch_labels.cpu()])
 
         # Average loss
         val_loss = val_loss / len(actuals)
 
         return actuals.numpy(), predicted.numpy(), val_loss
+
+    def trim_pad(self, batch_of_seq_x, batch_of_seq_y):
+        result_x = []
+        result_y = []
+        for s_x, s_y in zip(batch_of_seq_x, batch_of_seq_y):
+            i = 1
+            init_xi = s_x[i]
+            init_yi = s_y[i]
+
+            # 0 is the pad index
+            while init_xi.item() == init_yi.item() and init_yi.item() == 0:
+                i += 1
+            result_x.append(s_x[i:])
+            result_y.append(s_y[i:])
+
+        return torch.cat(result_x, dim=0), torch.cat(result_y, dim=0)
 
     def create_checkpoint(self, model, checkpoint_dir):
         if self.checkpoint_manager:
