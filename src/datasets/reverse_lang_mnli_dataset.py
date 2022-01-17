@@ -37,6 +37,6 @@ class ReverseLangMnliDataset(Dataset):
         if self.input_transformer:
             x = self.input_transformer(x)
 
-        y = x
+        y = x[::-1]
 
         return x, y
