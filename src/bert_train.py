@@ -242,6 +242,7 @@ class BertTrain:
             result_x.append(s_x[i:])
             result_y.append(s_y[i:])
 
+        # Change the 2 d to 1 dimentional array as each seq in the batch has a diff length.
         result_x, result_y = torch.cat(result_x, dim=0), torch.cat(result_y, dim=0)
 
         self._logger.debug("Completed triming")
