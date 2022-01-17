@@ -181,12 +181,12 @@ class BertTrain:
 
         return best_results
 
-    def _compute_scores(self, pos_label, actuals, confidence_scores):
+    def _compute_scores(self, pos_label, actuals, predicted):
         self._logger.info("Starting score computation")
 
         scores = []
         for scorer in self.scorers:
-            train_score = scorer(actuals, confidence_scores, pos_label=pos_label)
+            train_score = scorer(actuals, predicted, pos_label=pos_label)
             scores.append({"score_type": type(scorer).__name__, "score": train_score})
         self._logger.info("Complete score computation")
 
