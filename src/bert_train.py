@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import torch.utils.data
 
+from utils.trim_pad_utils import trim_lpad, trim_lpad_confidence
+
 
 class BertTrain:
     """
@@ -102,7 +104,7 @@ class BertTrain:
                 self._logger.debug("Running loss")
 
                 # Only compute loss for non-pad
-                trimmed_actual, trimmed_pred = self.trim_pad_conf(batch_y, predicted)
+                trimmed_actual, trimmed_pred = trim_lpad_confidence(batch_y, predicted)
                 loss = loss_function(trimmed_pred, trimmed_actual) / self.accumulation_steps
                 loss.backward()
 
@@ -215,7 +217,7 @@ class BertTrain:
 
                 pred_batch_labels = torch.max(pred_batch_y, dim=-1)[1]
 
-                trim_val_batch_y, trim_pred_batch_labels = self.trim_pad(val_batch_y.cpu(), pred_batch_labels.cpu())
+                trim_val_batch_y, trim_pred_batch_labels = trim_lpad(val_batch_y.cpu(), pred_batch_labels.cpu())
                 actuals = torch.cat([actuals, trim_val_batch_y.cpu()])
                 predicted = torch.cat([predicted, trim_pred_batch_labels.cpu()])
 
@@ -224,57 +226,6 @@ class BertTrain:
         self._logger.info("Completed validation")
 
         return actuals.numpy(), predicted.numpy(), val_loss
-
-    def trim_pad_conf(self, batch_of_seq_x, batch_of_seq_y_conf):
-        pred_batch_labels = torch.max(batch_of_seq_y_conf, dim=-1)[1]
-        result_x = []
-        result_y = []
-
-        for bi, (s_x, s_y) in enumerate(zip(batch_of_seq_x, pred_batch_labels)):
-            i = 1
-            xi = s_x[i]
-            yi = s_y[i]
-
-            # 0 is the pad index
-            while xi.item() == yi.item() and yi.item() == 0 and i < len(s_y):
-                i += 1
-                xi = s_x[i]
-                yi = s_y[i]
-
-            result_x.append(s_x[i:])
-            result_y.append(batch_of_seq_y_conf[bi][i:])
-
-        # Change the 2 d to 1 dimentional array as each seq in the batch has a diff length.
-        result_x, result_y = torch.cat(result_x, dim=0), torch.cat(result_y, dim=0)
-        # result_x = result_x.to(torch.float)
-
-        self._logger.debug("Completed triming")
-        return result_x, result_y
-
-    def trim_pad(self, batch_of_seq_x, batch_of_seq_y):
-        self._logger.debug("Starting triming")
-
-        result_x = []
-        result_y = []
-        for s_x, s_y in zip(batch_of_seq_x, batch_of_seq_y):
-            i = 1
-            xi = s_x[i]
-            yi = s_y[i]
-
-            # 0 is the pad index
-            while xi.item() == yi.item() and yi.item() == 0 and i < len(s_y):
-                i += 1
-                xi = s_x[i]
-                yi = s_y[i]
-
-            result_x.append(s_x[i:])
-            result_y.append(s_y[i:])
-
-        # Change the 2 d to 1 dimentional array as each seq in the batch has a diff length.
-        result_x, result_y = torch.cat(result_x, dim=0), torch.cat(result_y, dim=0)
-
-        self._logger.debug("Completed triming")
-        return result_x, result_y
 
     def create_checkpoint(self, model, checkpoint_dir):
         if self.checkpoint_manager:
