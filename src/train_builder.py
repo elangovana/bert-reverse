@@ -52,7 +52,7 @@ class TrainBuilder:
     def get_loss_function(self):
         PAD_INDEX = 0
         if self._lossfunc is None:
-            self._lossfunc = nn.CrossEntropyLoss(ignore_index=PAD_INDEX)
+            self._lossfunc = nn.CrossEntropyLoss()
         return self._lossfunc
 
     def get_optimiser(self):
