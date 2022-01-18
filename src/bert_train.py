@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.utils.data
 
-from utils.trim_pad_utils import trim_lpad, trim_lpad_confidence
+from utils.trim_pad_utils import trim_lpad
 
 
 class BertTrain:
@@ -104,8 +104,8 @@ class BertTrain:
                 self._logger.debug("Running loss")
 
                 # Only compute loss for non-pad
-                trimmed_actual, trimmed_pred = trim_lpad_confidence(batch_y, predicted)
-                loss = loss_function(trimmed_pred, trimmed_actual) / self.accumulation_steps
+                # trimmed_actual, trimmed_pred = trim_lpad_confidence(batch_y, predicted)
+                loss = loss_function(predicted.permute(0, 2, 1), batch_y) / self.accumulation_steps
                 loss.backward()
 
                 losses_train.append(loss.item())
