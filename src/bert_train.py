@@ -220,8 +220,8 @@ class BertTrain:
                 trim_val_batch_y, trim_pred_batch_labels = trim_lpad(val_batch_y.cpu(), pred_batch_labels.cpu())
 
                 if self._logger.isEnabledFor(logging.DEBUG):
-                    self._logger.debug(f"Prediction\n\t{trim_pred_batch_labels}")
-                    self._logger.debug(f"Actual\n\t{trim_val_batch_y}")
+                    self._logger.debug(f"Prediction {trim_pred_batch_labels.shape}\n\t{trim_pred_batch_labels[:10]}")
+                    self._logger.debug(f"Actual {trim_val_batch_y.shape} \n\t{trim_val_batch_y[:10]}")
 
                 actuals = torch.cat([actuals, trim_val_batch_y.cpu()])
                 predicted = torch.cat([predicted, trim_pred_batch_labels.cpu()])
