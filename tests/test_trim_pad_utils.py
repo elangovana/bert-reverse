@@ -15,7 +15,7 @@ class TestTrimPadUtils(TestCase):
                                              [.7, .7, 0.7]
                                              ]
                                             ])
-        expected_label = torch.tensor([1, 2, 3, 4])
+        expected_label = torch.tensor([2, 3, 4, 5])
         expected_conf = torch.tensor([
             [0.3, 0.4, 0.5],
             [0.7, 0.8, 0.9],
@@ -33,8 +33,8 @@ class TestTrimPadUtils(TestCase):
         self.assertTrue(torch.equal(expected_conf, actual_conf),
                         f"Expected \n{expected_conf} \ndoesnt match actual \n{actual_conf}")
 
-    def test_trim_lpad_confidence_no_pad_multiple(self):
-        data_label = torch.tensor([[0, 0, 8, 1, 2], [2, 0, 3, 4, 5]])
+    def test_trim_lpad_confidence_pad_multiple(self):
+        data_label = torch.tensor([[0, 0, 8, 1, 2], [2, 1, 3, 4, 5]])
         data_predicted_conf = torch.tensor([
             [
                 [0.1, 0.2, 0.3],
@@ -51,10 +51,10 @@ class TestTrimPadUtils(TestCase):
                 [.7, .7, 0.6]
             ],
         ])
-        expected_label = torch.tensor([0, 0, 8, 1, 2, 0, 3, 4])
+        expected_label = torch.tensor([8, 1, 2, 1, 3, 4, 5])
         expected_conf = torch.tensor([
             # [0.1, 0.2, 0.3],
-            [0.3, 0.4, 0.5],
+            # [0.3, 0.4, 0.5],
             [0.7, 0.8, 0.9],
             [.3, .3, 0.3],
             [.7, .7, 0.7],
@@ -76,7 +76,7 @@ class TestTrimPadUtils(TestCase):
                         f"Expected \n{expected_conf} \ndoesnt match actual \n{actual_conf}")
 
     def test_trim_lpad_confidence_with_pad(self):
-        data_label = torch.tensor([[1, 2, 0, 0, 0]])
+        data_label = torch.tensor([[0, 0, 0, 1, 2]])
         data_predicted_conf = torch.tensor([[[0.9, 0.2, 0.3],
                                              [0.8, 0.4, 0.5],
                                              [0.7, 0.8, 0.6],
@@ -98,9 +98,9 @@ class TestTrimPadUtils(TestCase):
                         f"Expected \n{expected_conf} \ndoesnt match actual \n{actual_conf}")
 
     def test_trim_lpad_no_pad(self):
-        data_x = torch.tensor([[0, 0, 0, 1, 2]])
+        data_x = torch.tensor([[1, 2, 0, 0, 0]])
         data_y = torch.tensor([[1, 2, 3, 4, 5]])
-        expected_x = torch.tensor([0, 0, 0, 1])
+        expected_x = torch.tensor([2, 0, 0, 0])
         expected_y = torch.tensor([2, 3, 4, 5])
 
         # Act
@@ -119,8 +119,8 @@ class TestTrimPadUtils(TestCase):
         data_y = torch.tensor([[1, 2, 3, 4, 5],
                                [0, 0, 6, 7, 8]
                                ])
-        expected_x = torch.tensor([0, 0, 0, 1, 0, 0, 4, 1])
-        expected_y = torch.tensor([2, 3, 4, 5, 0, 6, 7, 8])
+        expected_x = torch.tensor([1, 2, 4, 1, 2])
+        expected_y = torch.tensor([4, 5, 6, 7, 8])
 
         # Act
         actual_x, actual_y = trim_lpad(data_x, data_y)
@@ -132,7 +132,7 @@ class TestTrimPadUtils(TestCase):
                         f"Expected \n{expected_y} \ndoesnt match actual \n{actual_y}")
 
     def test_trim_pad_conf_with_pad(self):
-        data_x = torch.tensor([[1, 2, 0, 0, 1]])
+        data_x = torch.tensor([[1, 0, 0, 1, 2]])
         data_y = torch.tensor([[0, 2, 3, 4, 5]])
         expected_x = torch.tensor([1, 2])
         expected_y = torch.tensor([4, 5])

@@ -1,3 +1,5 @@
+import logging
+
 import torch
 
 
@@ -10,17 +12,17 @@ def trim_lpad_confidence(batch_of_seq_actual, batch_of_seq_pred_conf, pad_index=
     result_pred_conf = []
 
     for bi, (s_actual, s_pred_label) in enumerate(zip(batch_of_seq_actual, pred_batch_labels)):
-        # Assume last 0 is SEP, hence start with token before
-        i = len(s_actual) - 2
+        # Assume first 0 is SEP, hence start with token after
+        i = 1
         s_actual_i = s_actual[i]
 
         # 0 is the pad index
-        while s_actual_i.item() == pad_index and i > 0:
-            i -= 1
+        while s_actual_i.item() == pad_index and i < len(s_actual):
+            i += 1
             s_actual_i = s_actual[i]
 
-        result_actual.append(s_actual[:(i + 1)])
-        result_pred_conf.append(batch_of_seq_pred_conf[bi][-(i + 1):])
+        result_actual.append(s_actual[i:])
+        result_pred_conf.append(batch_of_seq_pred_conf[bi][i:])
 
     # Change the 2 d to 1 dimensional array as each seq in the batch has a diff length.
     result_actual, result_pred_conf = torch.cat(result_actual, dim=0), torch.cat(result_pred_conf, dim=0)
@@ -32,21 +34,28 @@ def trim_lpad(batch_of_seq_x, batch_of_seq_y):
     """
         Trims pad at the left, provided both  match in their pad positions
     """
+    logger = logging.getLogger(__name__)
     result_x = []
     result_y = []
     for s_x, s_y in zip(batch_of_seq_x, batch_of_seq_y):
-        # Last char is a sep
-        init = len(s_x) - 2
+        # first char is a sep
+        init = 1
         i = init
         xi = s_x[i]
 
         # 0 is the pad index
-        while xi.item() == 0 and i > 0:
-            i -= 1
+        while xi.item() == 0 and i < len(s_x):
+            i += 1
             xi = s_x[i]
 
-        result_x.append(s_x[:(i + 1)])
-        result_y.append(s_y[-(i + 1):])
+        trimmed_s_x = s_x[(i):]
+        result_x.append(trimmed_s_x)
+        trimmed_s_y = s_y[(i):]
+        result_y.append(trimmed_s_y)
+
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f"Prediction \n\t{trimmed_s_y}")
+            logger.debug(f"Actual  \n\t{trimmed_s_x}")
 
     # Change the 2 d to 1 dimentional array as each seq in the batch has a diff length.
     result_x, result_y = torch.cat(result_x, dim=0), torch.cat(result_y, dim=0)
