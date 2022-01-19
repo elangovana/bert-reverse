@@ -5,7 +5,7 @@ import torch
 
 def trim_lpad_confidence(batch_of_seq_actual, batch_of_seq_pred_conf, pad_index=0):
     """
-    Trims pad at the left, provided both predicted and actual match in their pad positions
+    Trims pad at the left, based on the ground truth / actual labels.
     """
     pred_batch_labels = torch.max(batch_of_seq_pred_conf, dim=-1)[1]
     result_actual = []
@@ -32,7 +32,7 @@ def trim_lpad_confidence(batch_of_seq_actual, batch_of_seq_pred_conf, pad_index=
 
 def trim_lpad(batch_of_seq_x, batch_of_seq_y):
     """
-        Trims pad at the left, provided both  match in their pad positions
+       Trims pad at the left, based on the ground truth (batch_of_seq_x)
     """
     logger = logging.getLogger(__name__)
     result_x = []
