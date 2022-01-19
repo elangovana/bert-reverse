@@ -218,6 +218,11 @@ class BertTrain:
                 pred_batch_labels = torch.max(pred_batch_y, dim=-1)[1]
 
                 trim_val_batch_y, trim_pred_batch_labels = trim_lpad(val_batch_y.cpu(), pred_batch_labels.cpu())
+
+                if self._logger.isEnabledFor(logging.DEBUG):
+                    self._logger.debug(f"Prediction\n\t{trim_pred_batch_labels}")
+                    self._logger.debug(f"Actual\n\t{trim_val_batch_y}")
+
                 actuals = torch.cat([actuals, trim_val_batch_y.cpu()])
                 predicted = torch.cat([predicted, trim_pred_batch_labels.cpu()])
 
