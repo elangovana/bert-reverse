@@ -10,6 +10,7 @@ from typing import Dict
 from dataset_builder import DatasetBuilder
 from inference.predictor import Predictor
 from locator import Locator
+from utils.trim_pad_utils import align_predicted_raw_text, get_raw_token_len_without_pad
 
 
 class BatchPredict:
@@ -19,7 +20,8 @@ class BatchPredict:
         return logging.getLogger(__name__)
 
     def predict_from_directory(self, datajson, base_artefacts_dir, is_ensemble, output_dir=None, numworkers=None,
-                               batch=32, additional_args=None, raw_data_reader_func=None, filter_func=None):
+                               batch=32, additional_args=None, raw_data_reader_func=None,
+                               get_raw_text_token_len_func=None):
         data_files = [datajson]
         if os.path.isdir(datajson):
             data_files = glob.glob("{}/*.jsonl".format(datajson))
@@ -29,7 +31,7 @@ class BatchPredict:
             self._logger.info("Running inference on file {} with output in {}".format(d, output_file))
             try:
                 prediction = self.predict_from_file(d, base_artefacts_dir, is_ensemble, output_file, numworkers, batch,
-                                                    additional_args, raw_data_reader_func, filter_func)
+                                                    additional_args, raw_data_reader_func, get_raw_text_token_len_func)
 
                 yield prediction
             except AssertionError as ex:
@@ -37,7 +39,7 @@ class BatchPredict:
                 yield None
 
     def predict_from_file(self, data_file, base_artifacts_dir, is_ensemble, output_file=None, numworkers=None, batch=32,
-                          additional_args=None, raw_data_reader_func=None, filter_func=None):
+                          additional_args=None, raw_data_reader_func=None, get_raw_text_token_len_func=None):
         additional_args = additional_args or {}
 
         self._logger.info(f"Processing data file {data_file}")
@@ -93,7 +95,8 @@ class BatchPredict:
         self.write_results_to_file(predictions_data, dataset_builder.get_label_mapper(),
                                    output_file,
                                    raw_data_iter,
-                                   filter_func)
+                                   model_factory.get_tokenisor(**train_args),
+                                   get_raw_text_token_len_func)
 
         self._logger.info(f"Completed file {data_file}")
 
@@ -101,15 +104,12 @@ class BatchPredict:
 
     def write_results_to_file(self, predictions_data_tuple, label_mapper,
                               output_file,
-                              raw_data_iter=None, filter_func=None):
+                              raw_data_iter=None, tokenisor=None, get_raw_text_token_len_func=None):
 
         result = []
 
         predictions_tensor = predictions_data_tuple[0]
         confidence_scores = predictions_data_tuple[1]
-        # If no filter pass everything through
-        default_filter = lambda p, c: True
-        filter_func = filter_func or default_filter
 
         if raw_data_iter is None:
             raw_data_iter = [None] * len(predictions_tensor)
@@ -128,16 +128,21 @@ class BatchPredict:
             conf_i = conf_i_tensor.cpu().tolist()
 
             label_mapped_prediction = [label_mapper.reverse_map(pi) for pi in pred_i]
-            predicted_raw_text = self._get_predicted_raw_text(label_mapped_prediction)
-
+            predicted_raw_text = None
+            raw_data_token_mapped = None
             predicted_confidence = conf_i
 
-            if not filter_func(label_mapped_prediction, predicted_confidence): continue
+            if isinstance(raw_data, str) and tokenisor is not None and get_raw_text_token_len_func is not None:
+                raw_tokens = tokenisor(raw_data)
+                raw_data_token_mapped = [label_mapper.reverse_map(ri) for ri in raw_tokens.cpu().tolist()]
+                predicted_raw_text = align_predicted_raw_text(label_mapped_prediction,
+                                                              get_raw_token_len_without_pad(raw_tokens))
 
             r = {
                 "prediction": label_mapped_prediction,
-             #   "confidence": predicted_confidence,
-                "predicted_raw_text": predicted_raw_text
+                #   "confidence": predicted_confidence,
+                "predicted_raw_text": predicted_raw_text,
+                "raw_data_tokens": raw_data_token_mapped
             }
 
             r = {**r}
@@ -160,31 +165,31 @@ class BatchPredict:
                     json.dump(item, f)
                     f.write("\n")
 
-    def _get_predicted_raw_text(self, label_mapped_prediction):
-        predicted_raw_text = ""
-        last_pad_position = None
-        for ti, t in enumerate(label_mapped_prediction):
-
-            if t.startswith("##"):
-                t = t[2:]
-            elif ti != 0:
-                predicted_raw_text = predicted_raw_text + " "
-
-            predicted_raw_text = predicted_raw_text + t
-
-            # Reset pad position, and get continuous one, after the first token #SEP
-            if t != "[PAD]" and last_pad_position is None and ti > 0:
-                last_pad_position = len(predicted_raw_text) - 1
-
-        if predicted_raw_text[0:5] == '[SEP]':
-            predicted_raw_text = predicted_raw_text[6:]
-            last_pad_position = last_pad_position - 6
-        if last_pad_position is not None:
-            predicted_raw_text = predicted_raw_text[last_pad_position:]
-
-        if predicted_raw_text.endswith('[CLS]'):
-            predicted_raw_text = predicted_raw_text[:-5]
-        return predicted_raw_text
+    # def _get_predicted_raw_text(self, label_mapped_prediction):
+    #     predicted_raw_text = ""
+    #     last_pad_position = None
+    #     for ti, t in enumerate(label_mapped_prediction):
+    #
+    #         if t.startswith("##"):
+    #             t = t[2:]
+    #         elif ti != 0:
+    #             predicted_raw_text = predicted_raw_text + " "
+    #
+    #         predicted_raw_text = predicted_raw_text + t
+    #
+    #         # Reset pad position, and get continuous one, after the first token #SEP
+    #         if t != "[PAD]" and last_pad_position is None and ti > 0:
+    #             last_pad_position = len(predicted_raw_text) - 1
+    #
+    #     if predicted_raw_text[0:5] == '[SEP]':
+    #         predicted_raw_text = predicted_raw_text[6:]
+    #         last_pad_position = last_pad_position - 6
+    #     if last_pad_position is not None:
+    #         predicted_raw_text = predicted_raw_text[last_pad_position:]
+    #
+    #     if predicted_raw_text.endswith('[CLS]'):
+    #         predicted_raw_text = predicted_raw_text[:-5]
+    #     return predicted_raw_text
 
     def _extract_file(self, targzfile, dest=None):
 
