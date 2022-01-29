@@ -61,3 +61,28 @@ def trim_lpad(batch_of_seq_x, batch_of_seq_y):
     result_x, result_y = torch.cat(result_x, dim=0), torch.cat(result_y, dim=0)
 
     return result_x, result_y
+
+
+def align_predicted_raw_text(pred_tokens, input_tokens_len):
+    predicted_raw_text = ""
+    assert input_tokens_len <= len(pred_tokens)
+
+    pred_tokens_without_pad = pred_tokens[(-1 * input_tokens_len - 1):-1]
+    for i in reversed(range(len(pred_tokens_without_pad))):
+
+        token = pred_tokens_without_pad[i]
+        space = "" if i == (input_tokens_len - 1) else " "
+        if token.startswith("##"):
+            space = ""
+            token = token[2:]
+
+        predicted_raw_text = predicted_raw_text + space + token
+
+    return predicted_raw_text
+
+
+def get_raw_token_len_without_pad(text_token_tensor, pad_index=0):
+    i = len(text_token_tensor) - 2
+    while text_token_tensor[i] == pad_index:
+        i = i - 1
+    return i

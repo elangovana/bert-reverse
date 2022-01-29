@@ -2,7 +2,8 @@ from unittest import TestCase
 
 import torch
 
-from utils.trim_pad_utils import trim_lpad_confidence, trim_lpad
+from utils.trim_pad_utils import trim_lpad_confidence, trim_lpad, align_predicted_raw_text, \
+    get_raw_token_len_without_pad
 
 
 class TestTrimPadUtils(TestCase):
@@ -145,3 +146,26 @@ class TestTrimPadUtils(TestCase):
                         f"Expected {expected_x} doesnt match actual {actual_x}")
         self.assertTrue(torch.equal(expected_y, actual_y),
                         f"Expected \n{expected_y} \ndoesnt match actual \n{actual_y}")
+
+    def test_align_predicted_raw_text(self):
+        text = ["the", "c", "##ourt"]
+        pred = ["[SEP]", "[PAD]", "[PAD]", "##ourt", "c", "the", "[CLS]"]
+        expected = "the court"
+        token_len = len(text)
+
+        # Act
+        actual = align_predicted_raw_text(pred, token_len)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_get_raw_token_len_without_pad(self):
+        # Input with CLS at start and SEP at the end
+        input = torch.tensor([3, 2, 4, 0, 0, 1])
+        expected_len = 2
+
+        # Act
+        actual = get_raw_token_len_without_pad(input, pad_index=0)
+
+        # Assert
+        self.assertEqual(expected_len, actual)
