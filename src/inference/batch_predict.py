@@ -75,21 +75,20 @@ class BatchPredict:
                                          tokenisor_factory_name=model_factory_name,
                                          num_workers=numworkers, batch_size=batch,
                                          addition_args_dict=train_args)
+
         # Load ensemble
         models = []
-        model_factories = []
         for artifact_dir in artifacts_directories:
             output_config = os.path.join(artifacts_directories[0], "training_config_parameters.json")
             with open(output_config, "r") as f:
-                train_args = json.load(f)
+                model_train_args = json.load(f)
 
             model_factory = Locator().get(model_factory_name)
-            model = model_factory.get_model(dataset_builder.num_classes, checkpoint_dir=artifact_dir, **train_args)
-            model_factories.append(model_factory.get_tokenisor(**train_args))
+            model = model_factory.get_model(dataset_builder.num_classes, checkpoint_dir=artifact_dir,
+                                            **model_train_args)
             models.append(model)
 
         model = models[0]
-        model_factory = model_factories[0]
         predictions_data = Predictor().predict(model,
                                                dataset_builder.get_val_dataloader())
 
@@ -97,7 +96,7 @@ class BatchPredict:
         self.write_results_to_file(predictions_data, dataset_builder.get_label_mapper(),
                                    output_file,
                                    raw_data_iter,
-                                   model_factory,
+                                   dataset_builder.get_tokenisor(),
                                    get_raw_text_token_len_func)
 
         self._logger.info(f"Completed file {data_file}")
