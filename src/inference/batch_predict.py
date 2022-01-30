@@ -77,6 +77,7 @@ class BatchPredict:
                                          addition_args_dict=train_args)
         # Load ensemble
         models = []
+        model_factories = []
         for artifact_dir in artifacts_directories:
             output_config = os.path.join(artifacts_directories[0], "training_config_parameters.json")
             with open(output_config, "r") as f:
@@ -84,18 +85,19 @@ class BatchPredict:
 
             model_factory = Locator().get(model_factory_name)
             model = model_factory.get_model(dataset_builder.num_classes, checkpoint_dir=artifact_dir, **train_args)
-
+            model_factories.append(model_factory.get_tokenisor(**train_args))
             models.append(model)
 
-        models = models[0]
-        predictions_data = Predictor().predict(models,
+        model = models[0]
+        model_factory = model_factories[0]
+        predictions_data = Predictor().predict(model,
                                                dataset_builder.get_val_dataloader())
 
         raw_data_iter = raw_data_reader_func(data_file) if raw_data_reader_func else None
         self.write_results_to_file(predictions_data, dataset_builder.get_label_mapper(),
                                    output_file,
                                    raw_data_iter,
-                                   model_factory.get_tokenisor(**train_args),
+                                   model_factory,
                                    get_raw_text_token_len_func)
 
         self._logger.info(f"Completed file {data_file}")
@@ -135,8 +137,9 @@ class BatchPredict:
             if isinstance(raw_data, str) and tokenisor is not None and get_raw_text_token_len_func is not None:
                 raw_tokens = tokenisor(raw_data)
                 raw_data_token_mapped = [label_mapper.reverse_map(ri) for ri in raw_tokens.cpu().tolist()]
+                raw_token_len = get_raw_token_len_without_pad(raw_tokens)
                 predicted_raw_text = align_predicted_raw_text(label_mapped_prediction,
-                                                              get_raw_token_len_without_pad(raw_tokens))
+                                                              raw_token_len)
 
             r = {
                 "prediction": label_mapped_prediction,
